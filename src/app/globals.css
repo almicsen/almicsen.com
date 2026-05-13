@@ -1,0 +1,104 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --font-sans: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, monospace;
+}
+
+:root {
+  --radius: 0.5rem;
+  --background: #07080b;
+  --foreground: #f4f1ea;
+  --card: #101217;
+  --card-foreground: #f4f1ea;
+  --popover: #101217;
+  --popover-foreground: #f4f1ea;
+  --primary: #f4f1ea;
+  --primary-foreground: #07080b;
+  --secondary: #181b22;
+  --secondary-foreground: #f4f1ea;
+  --muted: #171a22;
+  --muted-foreground: #a8a29a;
+  --accent: #62d6c7;
+  --accent-foreground: #07110f;
+  --destructive: #ff6b6b;
+  --border: #252a34;
+  --input: #252a34;
+  --ring: #62d6c7;
+}
+
+* {
+  border-color: var(--border);
+}
+
+html {
+  background: var(--background);
+  color: var(--foreground);
+  color-scheme: dark;
+}
+
+body {
+  min-height: 100vh;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.024) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+    radial-gradient(circle at 14% 0%, rgba(98, 214, 199, 0.16), transparent 30rem),
+    radial-gradient(circle at 88% 12%, rgba(244, 241, 234, 0.08), transparent 26rem),
+    radial-gradient(circle at 50% 105%, rgba(255, 111, 97, 0.08), transparent 28rem),
+    linear-gradient(180deg, #07080b 0%, #0b0d12 50%, #07080b 100%);
+  background-attachment: fixed;
+  background-size:
+    48px 48px,
+    48px 48px,
+    auto,
+    auto,
+    auto,
+    auto;
+  color: var(--foreground);
+}
+
+a {
+  text-underline-offset: 4px;
+}
+
+::selection {
+  background: rgba(98, 214, 199, 0.3);
+  color: #ffffff;
+}
+
+.polished-card {
+  border-color: rgba(255, 255, 255, 0.1);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0)),
+    rgba(16, 18, 23, 0.82);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.24);
+}
+
+.quiet-panel {
+  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(24, 27, 34, 0.54);
+}

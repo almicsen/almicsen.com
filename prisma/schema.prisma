@@ -1,0 +1,329 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  OWNER
+  ADMIN
+  EDITOR
+  FRIEND
+  MEMBER
+}
+
+enum Visibility {
+  DRAFT
+  PUBLISHED
+  PRIVATE
+  UNLISTED
+  FRIEND_ONLY
+  ADMIN_ONLY
+}
+
+enum ProjectStatus {
+  IDEA
+  IN_PROGRESS
+  PAUSED
+  SHIPPED
+  ARCHIVED
+}
+
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  SOLD_OUT
+  ARCHIVED
+}
+
+enum MediaKind {
+  IMAGE
+  VIDEO
+  PDF
+  DOCUMENT
+  EMBED
+  EXTERNAL_LINK
+}
+
+enum ScoreRenderEngine {
+  PDF_AUDIO
+  MUSICXML_OSMD
+  MEI_VEROVIO
+  EXTERNAL_EMBED
+  MANUAL_ONLY
+}
+
+enum ScoreLayoutMode {
+  AUTO_SCORE_BOOK
+  SINGLE_PAGE
+  TWO_PAGE_SPREAD
+  CONTINUOUS_SCROLL
+  MANUAL
+}
+
+enum ScoreDownloadPermission {
+  PUBLIC
+  LOGGED_IN
+  FRIEND_ONLY
+  ADMIN_ONLY
+  DISABLED
+}
+
+enum ScoreNodeFrameActionType {
+  TURN_TO_PAGE
+  TURN_TO_SPREAD
+  HIGHLIGHT_REGION
+  HIGHLIGHT_MEASURE
+  HIGHLIGHT_NOTE_RANGE
+  SCROLL_TO_REGION
+  SHOW_CALLOUT
+  CUSTOM
+}
+
+model User {
+  id            String          @id @default(cuid())
+  name          String?
+  email         String?         @unique
+  emailVerified DateTime?
+  image         String?
+  handle        String?         @unique
+  role          Role            @default(MEMBER)
+  accounts      Account[]
+  sessions      Session[]
+  writingPosts  WritingPost[]
+  friendProfile FriendProfile?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([role])
+  @@index([createdAt])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Project {
+  id             String        @id @default(cuid())
+  slug           String        @unique
+  title          String
+  subtitle       String?
+  description    String
+  longWriteup    String?
+  tags           String[]
+  categories     String[]
+  projectDate    DateTime?
+  status         ProjectStatus @default(IDEA)
+  visibility     Visibility    @default(DRAFT)
+  featured       Boolean       @default(false)
+  imageUrls      String[]
+  videoEmbedUrls String[]
+  documentUrls   String[]
+  githubUrl      String?
+  credits        String[]
+  externalLinks  Json?
+  scoreMediaSlugs String[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([visibility])
+  @@index([status])
+  @@index([featured])
+  @@index([projectDate])
+}
+
+model WritingPost {
+  id          String     @id @default(cuid())
+  slug        String     @unique
+  title       String
+  subtitle    String?
+  body        String
+  category    String
+  tags        String[]
+  series      String?
+  chapter     Int?
+  visibility  Visibility @default(DRAFT)
+  publishedAt DateTime?
+  authorId    String?
+  authorName  String     @default("almicsen")
+  scoreMediaSlugs String[]
+  author      User?      @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([visibility])
+  @@index([category])
+  @@index([publishedAt])
+  @@index([authorId])
+}
+
+model ShopProduct {
+  id                  String        @id @default(cuid())
+  slug                String        @unique
+  title               String
+  subtitle            String?
+  description         String
+  imageUrls           String[]
+  priceDisplay        String?
+  externalPurchaseUrl String
+  sellerName          String
+  status              ProductStatus @default(DRAFT)
+  visibility          Visibility    @default(DRAFT)
+  tags                String[]
+  categories          String[]
+  featured            Boolean       @default(false)
+  previewScoreMediaSlugs String[]
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  @@index([visibility])
+  @@index([status])
+  @@index([featured])
+}
+
+model MediaItem {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  kind        MediaKind
+  url         String
+  embedUrl    String?
+  provider    String?
+  visibility  Visibility @default(DRAFT)
+  metadata    Json?
+  isMusicScore Boolean @default(false)
+  scoreTitle String?
+  scoreSubtitle String?
+  composer String?
+  arranger String?
+  instrumentation String?
+  difficulty String?
+  durationLabel String?
+  durationMs Int?
+  pageCount Int?
+  scorePdfUrl String?
+  audioUrl String?
+  musicXmlUrl String?
+  midiUrl String?
+  externalMuseScoreEmbedUrl String?
+  externalMuseScoreEmbedCode String?
+  preferredScoreEngine ScoreRenderEngine?
+  scoreLayoutMode ScoreLayoutMode?
+  firstPageSolo Boolean @default(true)
+  pagesPerSpreadAfterFirst Int @default(2)
+  autoTurnPages Boolean @default(true)
+  showAudioPlayer Boolean @default(true)
+  showPageThumbnails Boolean @default(true)
+  showFullscreenButton Boolean @default(false)
+  showDownloadButton Boolean @default(false)
+  downloadPermission ScoreDownloadPermission @default(DISABLED)
+  allowExternalOpen Boolean @default(true)
+  nodeFrames ScoreNodeFrame[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([kind])
+  @@index([visibility])
+  @@index([isMusicScore])
+}
+
+model ScoreNodeFrame {
+  id String @id @default(cuid())
+  scoreMediaId String
+  scoreMedia MediaItem @relation(fields: [scoreMediaId], references: [id], onDelete: Cascade)
+  label String
+  startTimeMs Int
+  endTimeMs Int?
+  actionType ScoreNodeFrameActionType
+  pageNumber Int?
+  spreadIndex Int?
+  region Json?
+  measureStart Int?
+  measureEnd Int?
+  noteIds String[]
+  easing String?
+  animationDurationMs Int?
+  enabled Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([scoreMediaId])
+  @@index([startTimeMs])
+  @@index([actionType])
+  @@index([enabled])
+}
+
+model FeatureFlag {
+  id          String     @id @default(cuid())
+  key         String     @unique
+  name        String
+  description String
+  enabled     Boolean    @default(false)
+  visibility  Visibility @default(ADMIN_ONLY)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([enabled])
+  @@index([visibility])
+}
+
+model FriendProfile {
+  id           String     @id @default(cuid())
+  userId       String     @unique
+  handle       String     @unique
+  displayName  String
+  themeKey     String?
+  visibility   Visibility @default(FRIEND_ONLY)
+  approvedAt   DateTime?
+  ownerNotes   String?
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([visibility])
+  @@index([approvedAt])
+}
+
+model SiteSetting {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       Json
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
